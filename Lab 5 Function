@@ -1,0 +1,249 @@
+// Lab 5 Function
+// Written by Zhuo Chen from School of Mathematics and Statistics,CSU.
+// November 19, 2023
+
+#include <stdio.h>
+#include <stdbool.h>
+#include <math.h>
+#include <string.h>
+
+#define MAX_SIZE 2000
+#define MIN_SIZE 1000
+
+void taskOne();
+void taskTwo();
+void taskThree();
+void taskFour();
+void taskFive();
+void taskSix();
+
+// Lab 1
+float functionOne(float a, float b);
+
+//Lab 2
+bool isPrime[MAX_SIZE + 1]; 
+void isPrimeCtl();
+
+//Lab 3
+bool isPalindrome(int num);
+
+//Lab 4
+double power(double x, int n);
+
+//Lab 5
+int sumOfPowers(int n, int m);
+
+//Lab 6
+double factorial(int n);
+double f(double x, int n);
+
+
+int main(){
+	int ctl = 7;
+	
+	while(ctl != 0){
+		printf("Question 1:input 1\n");
+		printf("Question 2:input 2\n");
+		printf("Question 3:input 3\n");
+		printf("Question 4:input 4\n");
+		printf("Question 5:input 5\n");
+		printf("Question 6:input 6\n");
+		printf("Quit:input 0\n");
+		scanf("%d",&ctl);
+		
+		switch(ctl){
+			
+			case 1:
+				taskOne();
+				break;
+			case 2:
+				taskTwo();
+				break;
+			case 3:
+				taskThree();
+				break;
+			case 4:
+				taskFour();
+				break;
+			case 5:
+				taskFive();
+				break;
+			case 6:
+				taskSix();
+				break;
+			case 0:
+				break;
+		}
+    }
+    
+    return 0;
+	
+}
+
+// Lab 1
+
+void taskOne(){
+	
+	float a, b, y;
+    printf("a = ");
+    scanf("%f", &a);
+    
+    printf("b = ");
+    scanf("%f", &b);
+    
+    y = functionOne(a, b);
+    printf("y = %f\n", y);
+}
+
+float functionOne(float a, float b)
+{
+    return (a + b) * (a - b);
+}
+
+// Lab 2
+
+void taskTwo(){
+
+    isPrimeCtl();
+    
+    for (int i = MIN_SIZE; i <= MAX_SIZE; ++i) { 
+        if (isPrime[i]) {
+            printf("min prime number: %d\n", i); 
+            break;
+        }
+    }
+    for (int i = MAX_SIZE; i >= MIN_SIZE; --i) { 
+        if (isPrime[i]) {
+            printf("max prime number: %d\n", i); 
+            break;
+        }
+    }
+    printf("\n");
+
+}
+
+void isPrimeCtl(){
+    
+    memset(isPrime, true, sizeof(isPrime)); 
+    
+    for (int i = 2; i <= sqrt(MAX_SIZE); ++i) { 
+        if (isPrime[i]) { 
+            for (int j = i * i; j <= MAX_SIZE; j += i) { 
+                isPrime[j] = false;
+            }
+        }
+    }
+}
+
+// Lab 3
+
+void taskThree(){
+    for (int m = 11; m <= 999; m++) {
+        int mSquare = m * m;
+        int mCube = m * m * m;
+        if (isPalindrome(m) && isPalindrome(mSquare) && isPalindrome(mCube)) {
+            printf("%d\n", m);
+        }
+    }	
+}
+
+bool isPalindrome(int num) {
+    int reversedNum = 0;
+    int originalNum = num;
+    while (num != 0) {
+        int remainder = num % 10;
+        reversedNum = reversedNum * 10 + remainder;
+        num /= 10;
+    }
+    return originalNum == reversedNum;
+}
+
+// Lab 4
+
+void taskFour(){
+
+    double x;
+    int n;
+    
+    printf("Enter the value of x: ");
+    scanf("%lf", &x);
+    
+    printf("Enter the value of n: ");
+    scanf("%d", &n);
+    
+    double result = power(x, n);
+    
+    printf("%.2f ^ %d = %.2f\n", x, n, result);
+
+}
+
+double power(double x, int n) {
+    if (n == 0) {
+        return 1.0;
+    } else if (n > 0) {
+        return x * power(x, n - 1);
+    } else {
+        return 1.0 / power(x, -n);
+    }
+}
+
+// Lab 5
+
+void taskFive(){
+    int sum1 = sumOfPowers(100, 1);
+    int sum2 = sumOfPowers(50, 2);
+    double sum3 = 0.0;
+    for (int k = 1; k <= 10; k++) {
+        sum3 += 1.0 / k;
+    }
+
+    int totalSum = sum1 + sum2 + sum3;
+    printf("The total sum is %d\n", totalSum);
+}
+
+int sumOfPowers(int n, int m) {
+    if (n == 1) {
+        return power(1, m);
+    }
+    return power(n, m) + sumOfPowers(n - 1, m);
+}
+
+// Lab 6
+
+void taskSix(){
+	double x = 1.0;
+    int n = 3;
+
+    double numerator = f(x, n);
+    double denominator = f(x + 2.3, n) + f(x - 3.2, n + 3);
+    double y = numerator / denominator;
+
+    printf("y = %.4f\n", y);	
+}
+
+double factorial(int n) {
+    if (n == 0) {
+        return 1.0;
+    }
+    int i;
+    double fact = 1.0;
+    for (i = 1; i <= n; i++) {
+        fact *= i;
+    }
+    return fact;
+}
+
+double f(double x, int n) {
+    double result = 0.0;
+    int i;
+    for (i = 0; i <= n; i++) {
+        double term = (-1) * (i % 2 == 0 ? 1 : -1) * (x * x) / factorial(2 * i);
+        result += term;
+    }
+    return result;
+}
+
+// Written by Zhuo Chen from School of Mathematics and Statistics,CSU.
+// GitHub Account:XiShengC
+// URL: https://github.com/XiShengC/CSUCPlusPlusStudy.git
+// November 19, 2023
