@@ -1,0 +1,267 @@
+// Lab 6 Array
+// Written by Zhuo Chen from School of Mathematics and Statistics,CSU.
+// November 22, 2023
+
+#include <stdio.h>
+#include <stdbool.h>
+#include <math.h>
+#include <string.h>
+#include <float.h>
+
+#define ROWS 4
+#define COLS 4
+
+void taskOne();
+void taskTwo();
+void taskThree();
+void taskFour();
+void taskFive();
+void taskSix();
+
+#define MAX_LENGTH 100
+
+// Task 1
+int lookup(int x[],int n,int y);
+
+// Task 2
+int f(int x[],int n);
+
+// Task 3
+float* calAverage(int *a,int length);
+
+// Task 4
+int findSaddlePoint(int matrix[][COLS], int rows, int cols);
+
+// Task 5
+char* findLongestString() ;
+
+// Task 6
+void deleteCharAtIndex(char *str, int index);
+
+int main(void){
+	int ctl = 7;
+	
+	while(ctl != 0){
+		printf("Question 1:input 1\n");
+		printf("Question 2:input 2\n");
+		printf("Question 3:input 3\n");
+		printf("Question 4:input 4\n");
+		printf("Question 5:input 5\n");
+		printf("Question 6:input 6\n");
+		printf("Quit:input 0\n");
+		scanf("%d",&ctl);
+		
+		switch(ctl){
+			
+			case 1:
+				taskOne();
+				break;
+			case 2:
+				taskTwo();
+				break;
+			case 3:
+				taskThree();
+				break;
+			case 4:
+				taskFour();
+				break;
+			case 5:
+				taskFive();
+				break;
+			case 6:
+				taskSix();
+				break;
+			case 0:
+				break;
+		}
+    }
+    
+    return 0;
+	
+}
+
+// Task 1
+
+void taskOne(){	
+    int array[] = {11, 22, 33, 44, 55, 66, 77, 88, 99, 10};
+    int length = sizeof(array) / sizeof(array[0]);
+    int target;
+    printf("Please enter the element you want to find: ");
+    scanf("%d", &target);
+    int result = lookup(array, length, target);
+    if (result != -1) {
+        printf("Found, the index position of element %d in the array is %d\n", target, result);
+    } else {
+        printf("Not found, the element %d is not in the array\n", target);
+    }	
+}
+
+int lookup(int x[], int n, int y) {
+    for (int i = 0; i < n; i++) {
+        if (x[i] == y) {
+            return i;
+        }
+    }
+    return -1; 
+}
+
+// Task 2
+
+void taskTwo(){	
+    int array[] = {1,4,2,5,7,9,8};
+    int length = sizeof(array) / sizeof(array[0]);
+    int result = f(array, length);
+    printf("Max data is %d\n", result);
+}
+
+int f(int x[],int n){
+	int max = -32768;
+	for (int i = 0; i < n; i++) {
+		max = fmax(x[i],max);
+    }
+    return max; 
+}
+
+// Task 3
+
+void taskThree(){
+	int a[] = {4, 8, 16, 12};
+    int length = sizeof(a) / sizeof(a[0]);
+    
+    float* b = calAverage(a,length);
+    for (int i = 0; i < (length - 3); i++) {
+        printf("%f ", b[i]);
+    }
+     printf("\n");
+}
+
+float* calAverage(int *a,int length) {
+	
+	float* arr = (float*)malloc((length - 3) * sizeof(float));
+	
+	for (int i = 0; i < (length - 3); ++i) {
+		arr[i] = (a[i] + a[i + 1] + a[i + 2] + a[i +3])/4;
+   }
+   
+   return arr;
+}
+
+// Task 4
+
+void taskFour(){
+	int matrix[ROWS][COLS] = {
+        {1, 2, 3, 4},
+        {5, 6, 7, 8},
+        {9, 10, 11, 12},
+        {13, 14, 15, 16}
+    };
+    int saddlePoint = findSaddlePoint(matrix, ROWS, COLS);
+    if (saddlePoint != -1) {
+        int saddleRow = saddlePoint / COLS;
+        int saddleCol = saddlePoint % COLS;
+        printf("Saddle point found at Row %d, Column %d with value %d\n", saddleRow + 1, saddleCol + 1, matrix[saddleRow][saddleCol]);
+    } else {
+        printf("No saddle point found\n");
+    }
+}
+
+int findSaddlePoint(int matrix[][COLS], int rows, int cols) {
+    int saddleRow, saddleCol;
+    int isSaddlePoint = 0;
+  
+    for (int i = 0; i < rows; i++) {
+        int minInRow = matrix[i][0];
+        int colIndex = 0;
+        for (int j = 1; j < cols; j++) {
+            if (matrix[i][j] < minInRow) {
+                minInRow = matrix[i][j];
+                colIndex = j;
+            }
+        }
+      
+        int isMaxInCol = 1;
+        for (int k = 0; k < rows; k++) {
+            if (matrix[k][colIndex] > minInRow) {
+                isMaxInCol = 0;
+                break;
+            }
+        }
+      
+        if (isMaxInCol) {
+            saddleRow = i;
+            saddleCol = colIndex;
+            isSaddlePoint = 1;
+            break;
+        }
+    }
+  
+    if (isSaddlePoint) {
+        return saddleRow * COLS + saddleCol;
+    } else {
+        return -1;
+    }
+}
+
+// Task 5
+
+void taskFive(){
+	char *longestString = findLongestString();
+    printf("The longest string is: %s\n", longestString);
+    free(longestString);
+}
+
+char* findLongestString() {
+    char input[MAX_LENGTH];
+    char longestString[MAX_LENGTH] = "";
+    int maxLength = 0;
+    printf("Please enter strings (enter 'stop' to finish):\n");
+    while (1) {
+        scanf("%s", input);
+        if (strcmp(input, "stop") == 0) {
+            break;
+        }
+        int length = strlen(input);
+        if (length > maxLength) {
+            maxLength = length;
+            strcpy(longestString, input);
+        }
+    }
+    char *result = strdup(longestString);
+    return result;
+}
+
+// Task 6
+
+void taskSix(){
+	char input[MAX_LENGTH];
+    printf("Please enter a string with at least 10 characters: ");
+    fgets(input, MAX_LENGTH, stdin);
+    int length = strlen(input);
+    if (input[length - 1] == '\n') {
+        input[length - 1] = '\0';
+    }
+    if (strlen(input) < 10) {
+        printf("Input string should have at least 10 characters.\n");
+        return ;
+    }
+    int index;
+    printf("Please enter the index of the character to delete: ");
+    scanf("%d", &index);
+    deleteCharAtIndex(input, index);
+    printf("Result: %s\n", input);
+	
+}
+
+void deleteCharAtIndex(char *str, int index) {
+    int length = strlen(str);
+    if (index < 0 || index >= length) {
+        printf("Invalid index.\n");
+        return;
+    }
+    memmove(&str[index], &str[index+1], length - index);
+}
+
+// Written by Zhuo Chen from School of Mathematics and Statistics,CSU.
+// GitHub Account:XiShengC
+// URL: https://github.com/XiShengC/CSUCPlusPlusStudy.git
+// November 22, 2023
