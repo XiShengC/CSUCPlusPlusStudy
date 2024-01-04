@@ -1,0 +1,617 @@
+// Version X.0
+
+#include <stdio.h>  
+#include <stdlib.h>  
+#include <string.h>  
+#include <conio.h>
+#define SIZE 20
+
+
+typedef struct Contact {
+    char name[20];
+    char phone[15];
+    struct Contact* next;
+} Contact;
+
+typedef struct HashTable {
+    Contact* table[SIZE];
+} HashTable;
+
+typedef struct {
+    char name[20];
+    char phone[15];
+} SearchResult;
+
+
+struct PersonalInfo {
+    char name[50];
+    char studentID[20];
+    char phoneNumber[20];
+    char password[30];
+};
+
+typedef struct Score {
+    char date[11];
+    int score;
+    struct Score* next;
+} Score;
+
+
+
+
+void modifyInfo(struct PersonalInfo* info) {
+    printf("Enter new name: "); // 提示用户输入新姓名
+    scanf("%s", info->name); // 读取用户输入的新姓名
+    printf("Enter new student ID: "); // 提示用户输入新学号
+    scanf("%s", info->studentID); // 读取用户输入的新学号
+    printf("Enter new phone number: "); // 提示用户输入新电话号码
+    scanf("%s", info->phoneNumber); // 读取用户输入的新电话号码
+}
+
+void encryptDecrypt(char* input) {
+    char key = 'K'; // 加密解密密钥
+    for (int i = 0; i < strlen(input); i++) {
+        input[i] = input[i] ^ key; // 异或运算实现加密解密
+    }
+}
+
+void storeToFile(struct PersonalInfo* info) {
+    FILE* file = fopen("person_info.txt", "w"); // 打开文件以写入模式
+    if (file != NULL) {
+        encryptDecrypt(info->name); // 加密姓名
+        encryptDecrypt(info->studentID); // 加密学号
+        encryptDecrypt(info->phoneNumber); // 加密电话号码
+        encryptDecrypt(info->password);
+        fprintf(file, "%s,%s,%s,%s", info->name, info->studentID, info->phoneNumber, info->password); // 将加密后的信息写入文件
+        fclose(file); // 关闭文件
+    }
+    else {
+        printf("Unable to open file\n"); // 输出无法打开文件的信息
+    }
+}
+
+void readFromFile(struct PersonalInfo* info) {
+    FILE* file = fopen("person_info.txt", "r"); // 打开文件以读取模式
+    if (file != NULL) {
+        fscanf(file, "%[^,],%[^,],%[^,],%s", info->name, info->studentID, info->phoneNumber, info->password); // 从文件中读取加密的信息
+        //printf("Name: %s\nStudent ID: %s\nPhone number: %s\n password:%s\n", info->name, info->studentID, info->phoneNumber,password); // 输出解密后的信息
+        encryptDecrypt(info->name); // 解密姓名
+        encryptDecrypt(info->studentID); // 解密学号
+        encryptDecrypt(info->phoneNumber); // 解密电话号码
+        encryptDecrypt(info->password);
+        //printf("Name: %s\nStudent ID: %s\nPhone number: %s\n password:%s\n", info->name, info->studentID, info->phoneNumber,password); // 输出解密后的信息
+        fclose(file); // 关闭文件
+    }
+    else {
+        printf("Unable to open file\n"); // 输出无法打开文件的信息
+    }
+}
+void showInfo(struct PersonalInfo* info) {
+    printf("Name: %s\nStudent ID: %s\nPhone number: %s\n ", info->name, info->studentID, info->phoneNumber); // 输出解密后的信息
+}
+
+bool passwordCheck(struct PersonalInfo* info) {
+    char tempPassword[30];
+    int tempCountPassword = 0;
+    int timeCountPassword = 5;
+    while (strcmp(tempPassword, info->password) != 0) {
+        int flag = timeCountPassword - tempCountPassword;
+        if (tempCountPassword > 0 && flag != 0) printf("WRONG %d times left", flag);
+        if (flag == 0) {
+            printf("WRONG 0 times left");
+            return 1;
+        }
+        printf("PASSWORD:");
+        scanf("%s", &tempPassword);
+        tempCountPassword++;
+    }
+    return 0;
+}
+
+int changePassword(struct PersonalInfo* info) {
+	int changeFlag = passwordCheck(info);
+	if (changeFlag == 1) return 1;
+    printf("change password:");
+    scanf("%s", &info->password);
+    return 0;
+}
+
+Score* addScore(Score* head, char* date, int score) {
+
+    Score* newNode = (Score*)malloc(sizeof(Score));
+    if (!newNode) {
+        printf("Failed to allocate memory for new score.\n");
+        return NULL;
+    }
+    strcpy(newNode->date, date);
+    newNode->score = score;
+    newNode->next = NULL;
+
+    if (!head) {
+        return newNode;
+    }
+
+    Score* temp = head;
+    while (temp->next) {
+        temp = temp->next;
+    }
+    temp->next = newNode;
+    return head;
+}
+
+
+Score* deleteScore(Score* head, char* date) {
+    Score* current, * prev;
+    current = head;
+    prev = NULL;
+    while (current != NULL) {
+        if (strcmp(current->date, date) == 0) {
+            if (current == head) {
+                head = head->next;
+            }
+            else {
+                prev->next = current->next;
+            }
+            free(current);
+            return head;
+        }
+        else {
+            prev = current;
+            current = current->next;
+        }
+    }
+    printf("Score not found\n");
+    return head;
+}
+
+void printScores(Score* head) {
+    Score* current = head;
+    while (current != NULL) {
+        printf("Date: %s, Score: %d\n", current->date, current->score);
+        current = current->next;
+    }
+}
+
+void saveScoresToFile(Score* head, char* filename) {
+    FILE* file = fopen(filename, "w");
+    if (file == NULL) {
+        printf("Failed to open file\n");
+        return;
+    }
+    Score* current = head;
+    while (current != NULL) {
+        fprintf(file, "%8s %d\n", current->date, current->score);
+        current = current->next;
+    }
+    fclose(file);
+}
+
+
+Score* loadScoresFromFile(char* filename) {
+    FILE* file = fopen(filename, "r");
+    if (!file) {
+        printf("Failed to open file\n");
+        return NULL;
+    }
+    Score* head = NULL;
+    char date[9];
+    int score;
+    while (fscanf(file, "%8s %d\n", date, &score) == 2) {
+        head = addScore(head, date, score);  // 
+    }
+
+    if (head == NULL) {
+        printf("Failed to load scores from file.\n");
+        //return 1; 
+    }
+    fclose(file);
+    return head;
+}
+
+// 函数用于复制原链表节点
+Score* copyScoreNode(Score* node) {
+    Score* newNode = (Score*)malloc(sizeof(Score));
+    if (!newNode) {
+        return NULL;
+    }
+    strcpy(newNode->date, node->date);
+    newNode->score = node->score;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// 函数用于插入节点到排序链表
+Score* insertSorted(Score* head, Score* node) {
+    if (!head || node->score >= head->score) {
+        node->next = head;
+        return node;
+    }
+    Score* current = head;
+    while (current->next && current->next->score > node->score) {
+        current = current->next;
+    }
+    node->next = current->next;
+    current->next = node;
+    return head;
+}
+
+// 函数用于输出排序后的成绩
+void printSortedScores(Score* head) {
+    Score* sortedHead = NULL;
+    Score* current = head;
+    Score* nodeCopy;
+
+    // 复制原链表到新链表，并进行排序
+    while (current) {
+        nodeCopy = copyScoreNode(current);
+        if (!nodeCopy) {
+            printf("Failed to allocate memory for node copy.\n");
+            return;
+        }
+        sortedHead = insertSorted(sortedHead, nodeCopy);
+        current = current->next;
+    }
+
+    // 打印排序后的链表
+    printScores(sortedHead);
+
+    // 释放排序链表的内存
+    Score* temp;
+    while (sortedHead) {
+        temp = sortedHead;
+        sortedHead = sortedHead->next;
+        free(temp);
+    }
+}
+
+// 按名字搜索并排序联系人
+void searchByName(HashTable* ht, char* name) {
+    SearchResult results[SIZE];
+    int count = 0;
+
+    // 遍历哈希表，寻找匹配的联系人
+    for (int i = 0; i < SIZE; i++) {
+        Contact* temp = ht->table[i];
+        while (temp != NULL) {
+            if (strstr(temp->name, name) != NULL) {
+                strcpy(results[count].name, temp->name);
+                strcpy(results[count].phone, temp->phone);
+                count++;
+            }
+            temp = temp->next;
+        }
+    }
+
+    // 使用冒泡排序对结果进行排序
+    for (int i = 0; i < count - 1; i++) {
+        for (int j = 0; j < count - i - 1; j++) {
+            if (strcmp(results[j].name, results[j + 1].name) > 0) {
+                SearchResult temp = results[j];
+                results[j] = results[j + 1];
+                results[j + 1] = temp;
+            }
+        }
+    }
+
+    // 打印排序后的联系人
+    if (count == 0) {
+        printf("Contact not found\n");
+    }
+    else {
+        for (int i = 0; i < count; i++) {
+            printf("Name: %s, Phone: %s\n", results[i].name, results[i].phone);
+        }
+    }
+}
+
+// 哈希函数
+int hash(char* name) {
+    int hash = 0;
+    for (int i = 0; name[i] != '\0'; i++) {
+        hash += name[i];
+    }
+    return hash % SIZE;
+}
+
+// 初始化哈希表
+void initHashTable(HashTable* ht) {
+    for (int i = 0; i < SIZE; i++) {
+        ht->table[i] = NULL;
+    }
+}
+
+// 添加联系人
+void addContact(HashTable* ht, char* name, char* phone) {
+    Contact* newContact = (Contact*)malloc(sizeof(Contact));
+    strcpy(newContact->name, name);
+    strcpy(newContact->phone, phone);
+    newContact->next = NULL;
+
+    int index = hash(name);
+
+    if (ht->table[index] == NULL) {
+        ht->table[index] = newContact;
+    }
+    else {
+        Contact* temp = ht->table[index];
+        while (temp->next != NULL) {
+            temp = temp->next;
+        }
+        temp->next = newContact;
+    }
+}
+
+// 删除联系人
+void deleteContact(HashTable* ht, char* name) {
+    int index = hash(name);
+    Contact* temp = ht->table[index];
+    Contact* prev = NULL;
+
+    while (temp != NULL && strcmp(temp->name, name) != 0) {
+        prev = temp;
+        temp = temp->next;
+    }
+
+    if (temp == NULL) {
+        printf("Contact not found\n");
+        return;
+    }
+
+    if (prev == NULL) {
+        ht->table[index] = temp->next;
+    }
+    else {
+        prev->next = temp->next;
+    }
+    free(temp);
+}
+
+// 将通讯录储存成一个文档
+void saveToFile(HashTable* ht, char* filename) {
+    FILE* file = fopen(filename, "w");
+    if (file == NULL) {
+        printf("Error opening file\n");
+        return;
+    }
+
+    for (int i = 0; i < SIZE; i++) {
+        Contact* temp = ht->table[i];
+        while (temp != NULL) {
+            fprintf(file, "%s %s\n", temp->name, temp->phone);
+            temp = temp->next;
+        }
+    }
+
+    fclose(file);
+}
+
+// 从文档中读取数据进通讯录
+void readFromFile(HashTable* ht, char* filename) {
+    FILE* file = fopen(filename, "r");
+    if (file == NULL) {
+        printf("Error opening file\n");
+        return;
+    }
+
+    char name[20];
+    char phone[15];
+
+    while (fscanf(file, "%s %s", name, phone) != EOF) {
+        addContact(ht, name, phone);
+    }
+
+    fclose(file);
+}
+
+// 显示整个通讯录
+void displayContacts(HashTable* ht) {
+    for (int i = 0; i < SIZE; i++) {
+        Contact* temp = ht->table[i];
+        while (temp != NULL) {
+            printf("Name: %s, Phone: %s\n", temp->name, temp->phone);
+            temp = temp->next;
+        }
+    }
+}
+// 搜索联系人
+void searchContact(HashTable* ht, char* name) {
+    int index = hash(name);
+    Contact* temp = ht->table[index];
+
+    while (temp != NULL) {
+        if (strcmp(temp->name, name) == 0) {
+            printf("Name: %s, Phone: %s\n", temp->name, temp->phone);
+            return;
+        }
+        temp = temp->next;
+    }
+
+    printf("Contact not found\n");
+}
+
+
+
+
+
+void markeManageSystem() {
+    Score* head = NULL;
+    int choiceScore = -1;
+    char date[11];
+    int score;
+
+    char scoreFile[] = "scores.txt";
+    head = loadScoresFromFile(scoreFile);
+    if (head == NULL) {
+        printf("Failed to load scores from file.\n");
+        //return 1;
+    }
+
+
+    while (choiceScore != 0) {
+    	system("cls");
+        printf("\n\t\t\t*Marks Management System*\n");
+        printf("\n\t\t\t*1. Add Marks*\n");
+        printf("\n\t\t\t*2. Delete Marks*\n");
+        printf("\n\t\t\t*3. Print Marks*\n");
+     	printf("\n\t\t\t*3. Print Marks in sorted*\n");   
+        printf("\n\t\t\t*0. Exit*\n");
+        printf("Please enter your choice: ");
+        scanf("%d", &choiceScore);
+        switch (choiceScore) {
+        case 1:
+            printf("Please enter date (format YYYYMMDD): ");
+            scanf("%s", date);
+            printf("Please enter score: ");
+            scanf("%d", &score);
+            head = addScore(head, date, score);
+            break;
+        case 2:
+            printf("Please enter the date to delete (format YYYYMMDD): ");
+            scanf("%s", date);
+            head = deleteScore(head, date);
+            break;
+        case 3:
+            printScores(head);
+            break;
+        case 4:
+            printSortedScores(head);
+            break;
+        case 0:
+            printf("Exited the system\n");
+            break;
+        default:
+            printf("Invalid choice, please try again\n");
+            break;
+        }
+    }
+    saveScoresToFile(head, scoreFile);
+    free(head);
+}
+
+void AddressBookManagementSystem() {
+    HashTable ht;
+
+    initHashTable(&ht);//读文件
+
+    char contactsFile[] = "contacts.txt";
+
+    readFromFile(&ht, contactsFile);
+
+    int choiceContact = -1;
+
+    while (choiceContact != 0) {
+		system("cls");		
+        printf("\n\t\t\t*Address book management system*\n");
+        printf("\n\t\t\t*1.Output address book*\n");
+        printf("\n\t\t\t*2.Search for contacts*\n");
+        printf("\n\t\t\t*3.Add a contact*\n");
+        printf("\n\t\t\t*4.Delete a contact*\n");
+        printf("\n\t\t\t*5.Dizzy searsh*\n");
+        printf("\n\t\t\t*9.return*\n");
+        printf("\n\t\t\t*0.Exited*\n");
+
+        printf("Please enter your choice: ");
+        scanf("%d", &choiceContact);
+        switch (choiceContact) {
+        case 1:
+            displayContacts(&ht);
+            break;
+        case 2:
+            printf("Search name:");
+            char nameSearchContact[20];
+            scanf("%s", &nameSearchContact);
+            searchContact(&ht, nameSearchContact);
+            break;
+        case 3:
+            printf("Add name:");
+            char nameAddContact[20];
+            scanf("%s", &nameAddContact);
+
+            printf("\nAdd Phone:");
+            char phoneAddContact[15];
+            scanf("%s", &phoneAddContact);
+
+            addContact(&ht, nameAddContact, phoneAddContact);
+
+            break;
+        case 4:
+            printf("Delet name:");
+            char nameDeletContact[20];
+            scanf("%s", &nameDeletContact);
+            deleteContact(&ht, nameDeletContact);
+            break;
+        case 5:
+            printf("Enter name to search: (dizzy)");
+            char nameSearchContactDizzy[20];
+            scanf("%s", nameSearchContactDizzy);
+            searchByName(&ht, nameSearchContactDizzy);
+            break;
+
+        case 9:
+            printf("Return\n");
+            break;
+        case 0:
+            printf("Exited the system\n");
+            break;
+        default:
+            printf("Invalid choice, please try again\n");
+            break;
+        }
+    }
+
+    saveToFile(&ht, contactsFile);
+}
+int main() {
+    struct PersonalInfo info;
+
+    readFromFile(&info);
+
+    bool shutCtl = passwordCheck(&info);
+
+    if (shutCtl == 1) return 1;
+
+
+    int choiceTotal = -1;
+
+    while (choiceTotal != 0) {
+		system("cls"); 
+        printf("\n\t\t\t*Personal Information Management*\n");
+        printf("\n\t\t\t*1.Export personal information*\n");
+        printf("\n\t\t\t*2.Change information**\n");
+        printf("\n\t\t\t*3.Change Password*\n");
+        printf("\n\t\t\t*4.Marks Management System*\n");
+        printf("\n\t\t\t*5.Address book management system*\n");
+        printf("\n\t\t\t*0.return**\n");
+        printf("Please enter your choice: ");
+        scanf("%d", &choiceTotal);
+        switch (choiceTotal) {
+        case 1:
+            showInfo(&info);
+            break;
+        case 2:
+            modifyInfo(&info); // 记录个人信息
+            break;
+        case 3:
+        	shutCtl = changePassword(&info);
+            if (shutCtl == 1) return 1;
+            break;
+        case 4:
+            markeManageSystem();
+            break;
+        case 5:
+            AddressBookManagementSystem();
+            break;
+        case 0:
+            printf("Exited the system\n");
+            break;
+        default:
+            printf("Invalid choice, please try again\n");
+            break;
+        }
+    }
+
+    storeToFile(&info); // 将个人信息加密后存储到文件中
+    return 0;
+}
+
+ 
